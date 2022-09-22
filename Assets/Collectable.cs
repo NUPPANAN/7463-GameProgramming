@@ -1,18 +1,29 @@
+using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class Collectable : MonoBehaviour
 {
     public Collectabletype collectableType;
+    public PowerUp powerUp;
+    private float Timer;
 
     [SerializeField] private SpriteRenderer playersr;
-
+    [SerializeField] private SOScriptable collectableObject;
+    
+   
+       
     private void OnTriggerEnter2D(Collider2D collision)
     {
         if (collision.tag == "Player")
         {
             playercolor();
 
+            Powerjump();
+
             Destroy(gameObject);
+
         }
     }
 
@@ -34,4 +45,16 @@ public class Collectable : MonoBehaviour
                 break;
         }
     }
+
+    public void Powerjump()
+    {
+        switch (powerUp)
+        {
+            case PowerUp.DoubleJump:
+                Debug.Log("CanDoubleJump");
+                break;
+        }
+    }
+
+    
 }
