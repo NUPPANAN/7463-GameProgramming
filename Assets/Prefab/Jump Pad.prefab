@@ -179,3 +179,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   animator: {fileID: 4702855049689584030}
   jumpPadForce: 13
+  additionalSleepJumpTime: 0.3

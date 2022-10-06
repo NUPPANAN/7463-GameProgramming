@@ -5,9 +5,11 @@ public class PlayerCollision : MonoBehaviour
     [SerializeField] private PlayerController playerController;
 
     private Collider2D _playerCollider;
+    private SoundManager soundManager;
     private void Start()
     {
         _playerCollider = GetComponent<Collider2D>();
+        soundManager = FindObjectOfType<SoundManager>();
     }
     
     private void OnTriggerEnter2D(Collider2D col)
@@ -32,7 +34,7 @@ public class PlayerCollision : MonoBehaviour
                 default:
                     break;
             }
-            
+            soundManager.PlaySound("powerUp");
             Debug.Log(collectibleType);
         }
 

@@ -34,10 +34,13 @@ public class PlayerController : MonoBehaviour
 
     // Stored References
     private GameManager _gameManager;
+    private SoundManager soundManager;
+    
 
     private void Start()
     {
         _gameManager = FindObjectOfType<GameManager>();
+        soundManager = FindObjectOfType<SoundManager>();
     }
     private void Update()
     {
@@ -83,7 +86,7 @@ public class PlayerController : MonoBehaviour
             if (!_canDoubleJump) return; // If the player cannot double jump, return void. (Stop here)
             _canDoubleJump = false; // Else set double jump to false, then jump.
         }
-        AudioManager.instance.PlayerSFX(5);
+        
         Jump(jumpForce);
     }
 
@@ -152,15 +155,15 @@ public class PlayerController : MonoBehaviour
     private void OnMove(InputValue value)
     {
         _moveInput = value.Get<float>();
-        
         FlipPlayerSprite();
+        soundManager.PlaySound("footstep_grass_000");
     }
 
     private void OnJump(InputValue value)
     {
         if (!value.isPressed) return;
-
         TryJumping();
+        soundManager.PlaySound("jump");
     }
 
     private void OnQuit(InputValue value)

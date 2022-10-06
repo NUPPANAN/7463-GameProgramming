@@ -2,10 +2,10 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class AudioManager : MonoBehaviour
+public class SoundManager : MonoBehaviour
 {
     public AudioClip footstep1Sound, footstep2Sound, footstep3Sound, footstep4Sound, footstep5Sound, jumpSound, powerupSound, blackgroundSound;
-    static AudioSource audioSrc;
+    private AudioSource audioSrc;
 
     void Start()
     {
@@ -19,7 +19,7 @@ public class AudioManager : MonoBehaviour
         blackgroundSound = Resources.Load<AudioClip>("Mishief Stroll");
 
         audioSrc = GetComponent<AudioSource>();
-
+        
     }
 
     //Update is called once per frame
@@ -63,5 +63,5 @@ public class AudioManager : MonoBehaviour
                 audioSrc.PlayOneShot(footstep5Sound);
                 break;
         }
-    }
+    }  
 }

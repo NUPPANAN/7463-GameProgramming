@@ -16,7 +16,7 @@ public class Collectibles : MonoBehaviour
 
     public CollectibleType GetCollectibleInfoOnContact()
     {
-        AudioManager.instance.PlayerSFX(7);
+        
         gameObject.SetActive(false);
 
         if (_isRespawnable)
