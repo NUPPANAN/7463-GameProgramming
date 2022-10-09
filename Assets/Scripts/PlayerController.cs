@@ -1,4 +1,3 @@
-using System;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -9,16 +8,24 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private Rigidbody2D rb;
     [SerializeField] private Collider2D playerCollider;
     [SerializeField] private PlayerAnimatorController animatorController;
+    [SerializeField] private PlayerAudioController audioController;
 
     [Header("Player Values")] 
     [SerializeField] private float movementSpeed = 3f;
     [SerializeField] private float jumpForce = 10f;
+    [SerializeField] private float doubleJumpForceMultiplier = 1.5f;
     [SerializeField] private float timeBetweenJumps = 0.1f;
     [SerializeField] private float coyoteTimeDuration = 0.5f;
 
     [Header("Ground Checks")] 
     [SerializeField] private LayerMask groundLayers;
     [SerializeField] private float extraGroundCheckDistance = 0.5f;
+
+    [SerializeField] private ParticleSystem deathParticle;
+    
+
+    // Pre-made variables
+    private float _doubleJumpForce;
     
     // Input Values
     private float _moveInput;
@@ -27,6 +34,7 @@ public class PlayerController : MonoBehaviour
     private bool _isGrounded;
     private bool _canJump;
     private bool _canDoubleJump;
+    private bool _hasLanded = true;
 
     // Private variables
     private float _coyoteTimeTimer;
@@ -34,37 +42,37 @@ public class PlayerController : MonoBehaviour
 
     // Stored References
     private GameManager _gameManager;
-    private SoundManager soundManager;
-    
 
     private void Start()
     {
-        _gameManager = FindObjectOfType<GameManager>();
-        soundManager = FindObjectOfType<SoundManager>();
+        _doubleJumpForce = jumpForce * doubleJumpForceMultiplier; // Set up double jump multiplier at the start so you don't multiply every time.
     }
+
     private void Update()
     {
-        CheckGround();
-        CheckCanJump();
         SetAnimatorParameters();
     }
     
     private void FixedUpdate()
     {
+        CheckGround();
+        CheckCanJump();
         Move();
     }
 
     private void FindGameManager()
     {
         if (_gameManager != null) return;
-
+        
         _gameManager = FindObjectOfType<GameManager>();
     }
+
     #region Actions
 
     private void Move()
     {
         rb.velocity = new Vector2(_moveInput * movementSpeed, rb.velocity.y);
+        
     }
 
     private void FlipPlayerSprite()
@@ -80,14 +88,18 @@ public class PlayerController : MonoBehaviour
     private void TryJumping()
     {
         if (_lastJumpTimer <= timeBetweenJumps) return; // If the player just jumped or use a jump pad, ignore the first timeBetweenJumps seconds.
+
+        var currentJumpForce = jumpForce;
         
         if (!_canJump) // If the player can't jump, check these conditions. Else jump.
         {
             if (!_canDoubleJump) return; // If the player cannot double jump, return void. (Stop here)
             _canDoubleJump = false; // Else set double jump to false, then jump.
+            currentJumpForce = _doubleJumpForce; // Set a double jump force for double jump.
         }
-        
-        Jump(jumpForce);
+
+        audioController.PlayJump();
+        Jump(currentJumpForce);
     }
 
     public void Jump(float force, float additionalTimeWait = 0f)
@@ -111,6 +123,13 @@ public class PlayerController : MonoBehaviour
             groundLayers);
 
         _isGrounded = raycastHit.collider != null;
+
+        if (!_hasLanded && _isGrounded)
+        {
+            audioController.PlayFallImpact();
+        }
+        
+        _hasLanded = _isGrounded;
     }
 
     private void CheckCanJump()
@@ -144,8 +163,9 @@ public class PlayerController : MonoBehaviour
     public void TakeDamage()
     {
         FindGameManager();
+        audioController.PlayDeath();
         _gameManager.ProcessPlayerDeath();
-        _gameManager.DownLives();
+        Instantiate(deathParticle, transform.position,transform.rotation);
     }
     
     #endregion
@@ -155,23 +175,24 @@ public class PlayerController : MonoBehaviour
     private void OnMove(InputValue value)
     {
         _moveInput = value.Get<float>();
+        
+
         FlipPlayerSprite();
-        soundManager.PlaySound("footstep_grass_000");
     }
 
     private void OnJump(InputValue value)
     {
         if (!value.isPressed) return;
+
         TryJumping();
-        soundManager.PlaySound("jump");
     }
 
     private void OnQuit(InputValue value)
     {
-        if (!value.isPressed) return;
-        _gameManager.LoadScene(0);
+        FindGameManager();
+        _gameManager.ReturnToMainMenu();
     }
-
+    
     #endregion
 
 }

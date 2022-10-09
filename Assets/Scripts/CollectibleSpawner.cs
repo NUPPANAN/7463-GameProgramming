@@ -1,25 +1,32 @@
 using System.Collections;
 using UnityEngine;
-using DG.Tweening;
 
 public class CollectibleSpawner : MonoBehaviour
 {
     // This script is to handle the respawning of the collectible as a disabled gameObject cannot run any methods or coroutines on its own.
     [SerializeField] private SpriteRenderer spriteRenderer;
     [SerializeField] private GameObject collectibleGameObject;
-    [SerializeField] private Transform tweenEnd;
+    [SerializeField] private AudioPlayer audioPlayer;
+    [SerializeField] private SoAudioClips collectAudioClips;
+    [SerializeField] private SoAudioClips respawnAudioClips;
+    [SerializeField] private ParticleSystem coParticle;
+    [SerializeField] private ParticleSystem reParticle;
+    
 
 
     [Header("Collectible Settings")]
     [SerializeField] private float respawnTime = 4f;
+
     private void Start()
     {
-        transform.DOMove(tweenEnd.position, 3f).SetEase(Ease.InOutQuad).SetLoops(-1, LoopType.Yoyo);
+        spriteRenderer.enabled = false;
     }
+    
     private IEnumerator RespawnCollectible()
     {
         yield return new WaitForSeconds(respawnTime);
         SetOutlineSpriteActive(false);
+        PlayRespawn();
         collectibleGameObject.SetActive(true);
     }
 
@@ -36,6 +43,21 @@ public class CollectibleSpawner : MonoBehaviour
     public void StartRespawningCountdown() // This method is to let other script trigger the respawn countdown, and let this script handle the coroutine.
     {
         SetOutlineSpriteActive(true);
+        PlayCollected();
         StartCoroutine(RespawnCollectible());
     }
+    
+    #region Audio
+    private void PlayRespawn()
+    {
+        audioPlayer.PlaySound(respawnAudioClips);
+        Instantiate(reParticle, transform.position, transform.rotation);
+    }
+
+    private void PlayCollected()
+    {
+        audioPlayer.PlaySound(collectAudioClips);
+        Instantiate(coParticle, transform.position, transform.rotation);
+    }
+    #endregion
 }
